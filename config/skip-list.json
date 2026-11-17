@@ -1,0 +1,194 @@
+[
+  {
+    "folder": "aad-api-spo-cookie",
+    "reason": "Multi-project sample (projects in: webpart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "angular-migration",
+    "reason": "Multi-project sample (projects in: angular-todo-webpart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "angular-ngofficeuifabric-todo",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-3rd-party-api",
+    "reason": "Requests permissions to a non-Graph API: SharePoint.PnP.SampleRESTAPI"
+  },
+  {
+    "folder": "react-aad-webapi",
+    "reason": "Multi-project sample (projects in: webpart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-apim-tablestorage",
+    "reason": "Requests permissions to a non-Graph API: o3c-apim-chatpoc-sp"
+  },
+  {
+    "folder": "react-azfunc-vimeo",
+    "reason": "Multi-project sample (projects in: VimeoWebPart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-azure-devops-tasks",
+    "reason": "Requests permissions to a non-Graph API: Azure DevOps"
+  },
+  {
+    "folder": "react-banner",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-bot-framework-secure",
+    "reason": "Multi-project sample (projects in: bot, webpart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-bot-framework-sso",
+    "reason": "Multi-project sample (projects in: bot, webpart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-chat-sk",
+    "reason": "Requests permissions to a non-Graph API: React-Chat-Sk"
+  },
+  {
+    "folder": "react-chatgpt-app",
+    "reason": "Requests permissions to a non-Graph API: OpenAIFunctionsApp"
+  },
+  {
+    "folder": "react-dashboards",
+    "reason": "Requests permissions to a non-Graph API: Windows Azure Service Management API, Application Insights API"
+  },
+  {
+    "folder": "react-designpatterns-typescript",
+    "reason": "Multi-project sample (projects in: AbstractFactory, Builder, FactoryMethod, Singleton, Solid); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-dynamics-crm-api",
+    "reason": "Uses the retired Azure AD Graph API (permission request: Windows Azure Active Directory)"
+  },
+  {
+    "folder": "react-flow-button",
+    "reason": "Requests permissions to a non-Graph API: Microsoft Flow Service"
+  },
+  {
+    "folder": "react-flow-dashboard",
+    "reason": "Requests permissions to a non-Graph API: Microsoft Flow Service"
+  },
+  {
+    "folder": "react-followedsites",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-kiota-custom-api-client",
+    "reason": "Multi-project sample (projects in: teamified-client); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-links",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-lob-integration",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-m365-services-health",
+    "reason": "Multi-project sample (projects in: SPFx-WebPart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-my-approvals",
+    "reason": "Requests permissions to a non-Graph API: Microsoft Flow Service"
+  },
+  {
+    "folder": "react-openai-devops",
+    "reason": "Requests permissions to a non-Graph API: Azure DevOps"
+  },
+  {
+    "folder": "react-openai-summarise-page-content",
+    "reason": "Multi-project sample (projects in: webpart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-outlook-copy2teams",
+    "reason": "Uses the retired Azure AD Graph API (permission request: Windows Azure Active Directory)"
+  },
+  {
+    "folder": "react-people-directory",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-personal-calendar",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-personal-contacts",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-personal-email",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-personal-tasks",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-power-platform-environments",
+    "reason": "Requests permissions to a non-Graph API: Microsoft Flow Service"
+  },
+  {
+    "folder": "react-real-time",
+    "reason": "Multi-project sample (projects in: client, server); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-recent-contacts",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-recently-used-documents",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-recently-visited-sites",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-save-to-onedrive-app-personal-folder",
+    "reason": "Multi-project sample (projects in: library, webpart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-settings-approot",
+    "reason": "Multi-project sample (projects in: back-end, front-end); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-site-information",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-site-provisioning-manager",
+    "reason": "Multi-project sample (projects in: webpart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-site-secure-function-call",
+    "reason": "Requests permissions to a non-Graph API: 0a8dfbc9-0423-495b-a1e6-1055f0ca69c2"
+  },
+  {
+    "folder": "react-sp-elevatedprivileges",
+    "reason": "Multi-project sample (projects in: webpart); not supported by the upgrade pipeline"
+  },
+  {
+    "folder": "react-stock-information",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-tiles",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-weather-information",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-world-time",
+    "reason": "No SPFx project in the folder (README only: sample moved or archived)"
+  },
+  {
+    "folder": "react-yammer-praise",
+    "reason": "Uses the retired Azure AD Graph API (permission request: Windows Azure Active Directory)"
+  }
+]
