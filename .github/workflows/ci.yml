@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # Skip cleanly until the scaffold PR adds package-lock.json
+      - name: Check project exists
+        id: exists
+        run: |
+          if [ -f package-lock.json ]; then echo "yes=true" >> "$GITHUB_OUTPUT"
+          else echo "No package-lock.json yet: skipping"; echo "yes=false" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: actions/setup-node@v4
+        if: steps.exists.outputs.yes == 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        if: steps.exists.outputs.yes == 'true'
+        run: npm ci
+
+      - name: Format
+        if: steps.exists.outputs.yes == 'true'
+        run: npm run format:check
+
+      - name: Lint
+        if: steps.exists.outputs.yes == 'true'
+        run: npm run lint
+
+      - name: Typecheck
+        if: steps.exists.outputs.yes == 'true'
+        run: npm run typecheck
+
+      - name: Test
+        if: steps.exists.outputs.yes == 'true'
+        run: npm test
+
+      - name: Build
+        if: steps.exists.outputs.yes == 'true'
+        run: npm run build

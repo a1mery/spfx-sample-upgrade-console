@@ -64,12 +64,13 @@ fork, so creating an issue by hand gives exactly the same result.
 ## 6. App repo — what to implement
 
 ### 6.1 Architecture
-- **Frontend:** React (Vite) single-page app.
+- **Frontend:** React (Vite) single-page app with Fluent UI v9.
+- **Layout:** npm workspaces `server/`, `web/`, `shared/` (types only).
 - **Backend:** Node.js + TypeScript (Express or Fastify). It's the only component holding the GitHub token; the frontend calls the backend only.
 - **GitHub client:** Octokit (REST + GraphQL).
 - **Config:**
   - `.env` (git-ignored): `GITHUB_TOKEN`
-  - `config.json` (committed, no secrets):
+  - `config.json` (git-ignored because it holds a local path; `config.example.json` is committed):
     ```json
     {
       "forkLocalPath": "C:/dev/sp-dev-fx-webparts",
