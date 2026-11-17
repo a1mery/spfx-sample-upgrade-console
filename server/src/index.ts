@@ -7,6 +7,7 @@ const app = buildApp();
 try {
   await app.listen({ host: '127.0.0.1', port });
 } catch (error) {
-  app.log.error(error);
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`Failed to start server on 127.0.0.1:${port}: ${message}`);
   process.exitCode = 1;
 }
