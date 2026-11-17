@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@microsoft/sp-core-library": "~1.4.1",
+    "gulp": "^4.0.0"
+  }
+}

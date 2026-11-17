@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "webApiPermissionRequests": [
+      {
+        "resource": "Microsoft Graph",
+        "scope": "User.Read"
+      }
+    ]
+  }
+}
