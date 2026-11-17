@@ -3,7 +3,7 @@ import { buildApp } from './app.js';
 
 describe('GET /api/health', () => {
   it('returns an ok status', async () => {
-    const app = buildApp();
+    const app = buildApp({ logger: false });
 
     const response = await app.inject({
       method: 'GET',

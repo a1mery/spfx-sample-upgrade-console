@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "dev": "concurrently -k -n server,web -c blue,green \"npm:dev --workspace @spfx-console/server\" \"npm:dev --workspace @spfx-console/web\"",
+    "start": "npm run start --workspace @spfx-console/server",
     "build": "npm run build --workspace @spfx-console/shared && npm run build --workspace @spfx-console/server && npm run build --workspace @spfx-console/web",
     "lint": "eslint .",
     "typecheck": "npm run typecheck --workspaces --if-present",
