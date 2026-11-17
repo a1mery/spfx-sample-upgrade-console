@@ -1,0 +1,19 @@
+{
+  "name": "@spfx-console/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@spfx-console/shared": "0.1.0",
+    "dotenv": "18.0.10",
+    "fastify": "5.12.8"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15"
+  }
+}

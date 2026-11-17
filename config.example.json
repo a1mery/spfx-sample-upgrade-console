@@ -1,0 +1,9 @@
+{
+  "forkLocalPath": "C:/dev/sp-dev-fx-webparts",
+  "forkOwner": "<me>",
+  "forkRepo": "sp-dev-fx-webparts",
+  "baseBranch": "main",
+  "targetSpfxVersion": "latest",
+  "customAgent": "spfx-upgrade",
+  "skipList": "config/skip-list.json"
+}
