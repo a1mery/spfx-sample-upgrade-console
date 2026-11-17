@@ -1,5 +1,8 @@
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
@@ -16,9 +19,28 @@ describe('server startup', () => {
       throw new Error('Expected the blocker server to have a TCP address');
     }
 
+    const configDirectory = await mkdtemp(join(tmpdir(), 'spfx-startup-'));
+    const configPath = join(configDirectory, 'config.json');
+    const forkLocalPath = fileURLToPath(
+      new URL('../test/fixtures/', import.meta.url),
+    );
+    await writeFile(
+      configPath,
+      JSON.stringify({
+        forkLocalPath,
+        forkOwner: 'owner',
+        forkRepo: 'repo',
+        targetSpfxVersion: 'latest',
+      }),
+    );
+
     const child = spawn(process.execPath, ['--import', 'tsx', 'src/index.ts'], {
       cwd: fileURLToPath(new URL('..', import.meta.url)),
-      env: { ...process.env, PORT: String(address.port) },
+      env: {
+        ...process.env,
+        CONFIG_PATH: configPath,
+        PORT: String(address.port),
+      },
     });
     let stderr = '';
     child.stderr.setEncoding('utf8');
@@ -35,6 +57,7 @@ describe('server startup', () => {
     await new Promise<void>((resolve, reject) => {
       blocker.close((error) => (error ? reject(error) : resolve()));
     });
+    await rm(configDirectory, { recursive: true, force: true });
 
     expect(result.code).toBe(1);
     expect(stderr).toContain('Failed to start server');

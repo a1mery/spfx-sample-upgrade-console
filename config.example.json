@@ -1,5 +1,5 @@
 {
-  "forkLocalPath": "C:/dev/sp-dev-fx-webparts",
+  "forkLocalPath": "/path/to/sp-dev-fx-webparts",
   "forkOwner": "<me>",
   "forkRepo": "sp-dev-fx-webparts",
   "baseBranch": "main",

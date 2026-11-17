@@ -14,3 +14,14 @@ export interface SampleInfo {
   usesGraph: boolean;
   error: string | null;
 }
+
+export interface SampleRow extends SampleInfo {
+  skipped: boolean;
+  skipReason: string | null;
+}
+
+export interface SamplesResponse {
+  samples: SampleRow[];
+  scannedAt: string;
+  total: number;
+}
