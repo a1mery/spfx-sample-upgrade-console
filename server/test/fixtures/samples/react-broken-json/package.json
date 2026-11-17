@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@microsoft/sp-core-library": "1.19.0",
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@microsoft/sp-core-library": "1.21.1",
+    "@pnp/graph": "^4.0.0"
+  }
+}
