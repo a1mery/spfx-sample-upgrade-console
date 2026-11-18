@@ -58,6 +58,31 @@ describe('createTargetVersionResolver', () => {
     expect(refreshed.version).toBe('1.24.0');
   });
 
+  it('shares one in-flight npm lookup between concurrent callers', async () => {
+    let finishRequest: ((response: Response) => void) | undefined;
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(registryResponse('1.22.0'))
+      .mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            finishRequest = resolve;
+          }),
+      );
+    const resolve = createTargetVersionResolver('latest', fetchImpl);
+
+    await resolve();
+    const first = resolve(true);
+    const second = resolve();
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+
+    finishRequest?.(registryResponse('1.23.4'));
+    await expect(Promise.all([first, second])).resolves.toMatchObject([
+      { version: '1.23.4' },
+      { version: '1.23.4' },
+    ]);
+  });
+
   it('returns a stale cached value when refreshing fails', async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
