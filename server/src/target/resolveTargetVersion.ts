@@ -27,15 +27,16 @@ export function createTargetVersionResolver(
 
   let cached: TargetVersion | null = null;
   let cachedAt = 0;
+  let inFlight: Promise<TargetVersion> | null = null;
 
-  return async (forceRefresh = false): Promise<TargetVersion> => {
+  return (forceRefresh = false): Promise<TargetVersion> => {
     if (explicitVersion !== null) {
-      return {
+      return Promise.resolve({
         version: explicitVersion,
         source: 'config',
         resolvedAt: new Date().toISOString(),
         stale: false,
-      };
+      });
     }
 
     if (
@@ -43,49 +44,64 @@ export function createTargetVersionResolver(
       cached !== null &&
       Date.now() - cachedAt < CACHE_DURATION_MS
     ) {
-      return cached;
+      return Promise.resolve(cached);
     }
 
-    try {
-      const response = await fetchImpl(REGISTRY_URL, {
-        signal: AbortSignal.timeout(10_000),
-      });
-      if (!response.ok) {
-        throw new Error(`npm registry returned HTTP ${response.status}`);
-      }
+    if (inFlight !== null) {
+      return inFlight;
+    }
 
-      const body: unknown = await response.json();
-      const distTags =
-        isRecord(body) && isRecord(body['dist-tags'])
-          ? body['dist-tags']
-          : null;
-      const version =
-        distTags !== null && typeof distTags.latest === 'string'
-          ? semver.valid(distTags.latest)
-          : null;
-      if (version === null) {
+    const request = (async (): Promise<TargetVersion> => {
+      try {
+        const response = await fetchImpl(REGISTRY_URL, {
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!response.ok) {
+          throw new Error(`npm registry returned HTTP ${response.status}`);
+        }
+
+        const body: unknown = await response.json();
+        const distTags =
+          isRecord(body) && isRecord(body['dist-tags'])
+            ? body['dist-tags']
+            : null;
+        const version =
+          distTags !== null && typeof distTags.latest === 'string'
+            ? semver.valid(distTags.latest)
+            : null;
+        if (version === null) {
+          throw new Error(
+            'npm registry response did not contain a valid dist-tags.latest version',
+          );
+        }
+
+        cached = {
+          version,
+          source: 'npm',
+          resolvedAt: new Date().toISOString(),
+          stale: false,
+        };
+        cachedAt = Date.now();
+        return cached;
+      } catch (error) {
+        if (cached !== null) {
+          cached = { ...cached, stale: true };
+          return cached;
+        }
         throw new Error(
-          'npm registry response did not contain a valid dist-tags.latest version',
+          `Unable to resolve latest SPFx version from npm registry: ${errorMessage(error)}`,
+          { cause: error },
         );
       }
+    })();
 
-      cached = {
-        version,
-        source: 'npm',
-        resolvedAt: new Date().toISOString(),
-        stale: false,
-      };
-      cachedAt = Date.now();
-      return cached;
-    } catch (error) {
-      if (cached !== null) {
-        cached = { ...cached, stale: true };
-        return cached;
+    inFlight = request;
+    const clearInFlight = () => {
+      if (inFlight === request) {
+        inFlight = null;
       }
-      throw new Error(
-        `Unable to resolve latest SPFx version from npm registry: ${errorMessage(error)}`,
-        { cause: error },
-      );
-    }
+    };
+    void request.then(clearInFlight, clearInFlight);
+    return request;
   };
 }

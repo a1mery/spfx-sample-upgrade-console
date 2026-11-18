@@ -32,4 +32,5 @@ export interface SamplesResponse {
   samples: SampleRow[];
   scannedAt: string;
   total: number;
+  target: TargetVersion | null;
 }

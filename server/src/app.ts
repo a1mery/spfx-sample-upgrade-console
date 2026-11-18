@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import type {
   HealthResponse,
   SampleInfo,
+  SampleRow,
   TargetVersion,
   SamplesResponse,
 } from '@spfx-console/shared';
@@ -23,6 +24,12 @@ type BuildAppOptions = {
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
+
+type CachedSamples = {
+  samples: Omit<SampleRow, 'needsUpgrade'>[];
+  scannedAt: string;
+  total: number;
+};
 
 export function buildApp(options: BuildAppOptions) {
   const app = Fastify({
@@ -48,21 +55,19 @@ export function buildApp(options: BuildAppOptions) {
   const skipEntries = new Map(
     options.skipList.map((entry) => [entry.folder, entry.reason]),
   );
-  let cachedResponse: SamplesResponse | null = null;
-  let inFlightScan: Promise<SamplesResponse> | null = null;
+  let cachedScan: CachedSamples | null = null;
+  let inFlightScan: Promise<CachedSamples> | null = null;
 
-  function refreshSamples(
-    forceTargetRefresh = false,
-  ): Promise<SamplesResponse> {
-    if (inFlightScan) {
+  function scanSamples(forceScan: boolean): Promise<CachedSamples> {
+    if (!forceScan && cachedScan !== null) {
+      return Promise.resolve(cachedScan);
+    }
+    if (inFlightScan !== null) {
       return inFlightScan;
     }
 
     const scan = (async () => {
-      const [discovered, targetVersion] = await Promise.all([
-        discover(samplesRoot),
-        resolveTargetVersion(forceTargetRefresh).catch(() => null),
-      ]);
+      const discovered = await discover(samplesRoot);
       const discoveredFolders = new Set(discovered.map(({ folder }) => folder));
       for (const folder of skipEntries.keys()) {
         if (!discoveredFolders.has(folder)) {
@@ -75,25 +80,19 @@ export function buildApp(options: BuildAppOptions) {
 
       const samples = discovered.map((sample) => {
         const skipReason = skipEntries.get(sample.folder) ?? null;
-        const sampleVersion =
-          sample.spfxVersion === null ? null : semver.valid(sample.spfxVersion);
         return {
           ...sample,
           skipped: skipReason !== null,
           skipReason,
-          needsUpgrade:
-            sampleVersion === null || targetVersion === null
-              ? null
-              : semver.lt(sampleVersion, targetVersion.version),
         };
       });
-      const response: SamplesResponse = {
+      const result: CachedSamples = {
         samples,
         scannedAt: new Date().toISOString(),
         total: samples.length,
       };
-      cachedResponse = response;
-      return response;
+      cachedScan = result;
+      return result;
     })();
 
     inFlightScan = scan;
@@ -112,11 +111,41 @@ export function buildApp(options: BuildAppOptions) {
     return scan;
   }
 
+  async function getSamples(refresh: boolean): Promise<SamplesResponse> {
+    const [scan, target] = await Promise.all([
+      scanSamples(refresh),
+      resolveTargetVersion(refresh).catch((error: unknown) => {
+        app.log.warn(
+          { error: errorMessage(error) },
+          'Unable to resolve target SPFx version',
+        );
+        return null;
+      }),
+    ]);
+
+    return {
+      samples: scan.samples.map((sample) => {
+        const sampleVersion =
+          sample.spfxVersion === null ? null : semver.valid(sample.spfxVersion);
+        return {
+          ...sample,
+          needsUpgrade:
+            sampleVersion === null || target === null
+              ? null
+              : semver.lt(sampleVersion, target.version),
+        };
+      }),
+      scannedAt: scan.scannedAt,
+      total: scan.total,
+      target,
+    };
+  }
+
   app.get<{ Reply: SamplesResponse | { error: string } }>(
     '/api/samples',
     async (_request, reply) => {
       try {
-        return cachedResponse ?? (await refreshSamples());
+        return await getSamples(false);
       } catch (error) {
         return reply.code(500).send({ error: errorMessage(error) });
       }
@@ -138,7 +167,7 @@ export function buildApp(options: BuildAppOptions) {
     '/api/samples/refresh',
     async (_request, reply) => {
       try {
-        return await refreshSamples(true);
+        return await getSamples(true);
       } catch (error) {
         return reply.code(500).send({ error: errorMessage(error) });
       }

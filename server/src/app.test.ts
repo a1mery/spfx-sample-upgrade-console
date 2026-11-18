@@ -117,7 +117,12 @@ describe('samples API', () => {
 
     expect(failedRefresh.statusCode).toBe(500);
     expect(failedRefresh.json()).toEqual({ error: 'sample scan failed' });
-    expect(cached.json()).toEqual(initial.json());
+    expect(cached.json()).toMatchObject({
+      samples: initial.json().samples,
+      scannedAt: initial.json().scannedAt,
+      total: initial.json().total,
+      target: { version: initial.json().target.version },
+    });
     await app.close();
   });
 
@@ -179,6 +184,11 @@ describe('samples API', () => {
       ['newer', false],
       ['unknown', null],
     ]);
+    expect(samples.json().target).toMatchObject({
+      version: '1.23.0',
+      source: 'npm',
+      stale: false,
+    });
     expect(fetch).toHaveBeenCalledTimes(1);
     await app.close();
   });
@@ -215,7 +225,51 @@ describe('samples API', () => {
       'Unable to resolve latest SPFx version',
     );
     expect(samples.statusCode).toBe(200);
+    expect(samples.json().target).toBeNull();
     expect(samples.json().samples[0].needsUpgrade).toBeNull();
+    await app.close();
+  });
+
+  it('retries a failed target lookup on the next samples request without rescanning', async () => {
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockRejectedValueOnce(new Error('network unavailable'))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ 'dist-tags': { latest: '1.23.0' } }), {
+          status: 200,
+        }),
+      );
+    let scanCount = 0;
+    const app = buildApp({
+      config: { ...config, targetSpfxVersion: 'latest' },
+      skipList: [],
+      logger: false,
+      fetch,
+      discover: async () => {
+        scanCount += 1;
+        return [
+          {
+            folder: 'older',
+            title: null,
+            spfxVersion: '1.22.0',
+            versionSource: 'package.json',
+            toolchain: 'gulp',
+            usesGraph: false,
+            error: null,
+          },
+        ];
+      },
+    });
+
+    const first = await app.inject({ method: 'GET', url: '/api/samples' });
+    const second = await app.inject({ method: 'GET', url: '/api/samples' });
+
+    expect(first.json().target).toBeNull();
+    expect(first.json().samples[0].needsUpgrade).toBeNull();
+    expect(second.json().target).toMatchObject({ version: '1.23.0' });
+    expect(second.json().samples[0].needsUpgrade).toBe(true);
+    expect(scanCount).toBe(1);
+    expect(fetch).toHaveBeenCalledTimes(2);
     await app.close();
   });
 
