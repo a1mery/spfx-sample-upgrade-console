@@ -61,6 +61,18 @@ describe('loadConfig', () => {
     });
   });
 
+  it('normalizes an explicit semver version', async () => {
+    const repoRoot = await createRepo();
+    await writeConfig(repoRoot, {
+      ...validConfig(),
+      targetSpfxVersion: 'v1.22.1',
+    });
+
+    await expect(loadConfig({}, repoRoot)).resolves.toMatchObject({
+      targetSpfxVersion: '1.22.1',
+    });
+  });
+
   it('uses the trimmed fork path when validating it', async () => {
     const repoRoot = await createRepo();
     await writeConfig(repoRoot, validConfig(' fork '));

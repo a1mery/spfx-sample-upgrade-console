@@ -2,18 +2,22 @@ import Fastify from 'fastify';
 import type {
   HealthResponse,
   SampleInfo,
+  TargetVersion,
   SamplesResponse,
 } from '@spfx-console/shared';
+import semver from 'semver';
 import { join } from 'node:path';
 import { discoverSamples } from './samples/discoverSamples.js';
 import type { SkipListEntry } from './config/loadSkipList.js';
 import type { ServerConfig } from './config/loadConfig.js';
+import { createTargetVersionResolver } from './target/resolveTargetVersion.js';
 
 type BuildAppOptions = {
   config: ServerConfig;
   skipList: SkipListEntry[];
   logger?: false;
   discover?: (samplesRoot: string) => Promise<SampleInfo[]>;
+  fetch?: typeof fetch;
 };
 
 function errorMessage(error: unknown): string {
@@ -36,6 +40,10 @@ export function buildApp(options: BuildAppOptions) {
   }));
 
   const discover = options.discover ?? discoverSamples;
+  const resolveTargetVersion = createTargetVersionResolver(
+    options.config.targetSpfxVersion,
+    options.fetch,
+  );
   const samplesRoot = join(options.config.forkLocalPath, 'samples');
   const skipEntries = new Map(
     options.skipList.map((entry) => [entry.folder, entry.reason]),
@@ -43,13 +51,18 @@ export function buildApp(options: BuildAppOptions) {
   let cachedResponse: SamplesResponse | null = null;
   let inFlightScan: Promise<SamplesResponse> | null = null;
 
-  function refreshSamples(): Promise<SamplesResponse> {
+  function refreshSamples(
+    forceTargetRefresh = false,
+  ): Promise<SamplesResponse> {
     if (inFlightScan) {
       return inFlightScan;
     }
 
     const scan = (async () => {
-      const discovered = await discover(samplesRoot);
+      const [discovered, targetVersion] = await Promise.all([
+        discover(samplesRoot),
+        resolveTargetVersion(forceTargetRefresh).catch(() => null),
+      ]);
       const discoveredFolders = new Set(discovered.map(({ folder }) => folder));
       for (const folder of skipEntries.keys()) {
         if (!discoveredFolders.has(folder)) {
@@ -62,10 +75,16 @@ export function buildApp(options: BuildAppOptions) {
 
       const samples = discovered.map((sample) => {
         const skipReason = skipEntries.get(sample.folder) ?? null;
+        const sampleVersion =
+          sample.spfxVersion === null ? null : semver.valid(sample.spfxVersion);
         return {
           ...sample,
           skipped: skipReason !== null,
           skipReason,
+          needsUpgrade:
+            sampleVersion === null || targetVersion === null
+              ? null
+              : semver.lt(sampleVersion, targetVersion.version),
         };
       });
       const response: SamplesResponse = {
@@ -104,11 +123,22 @@ export function buildApp(options: BuildAppOptions) {
     },
   );
 
+  app.get<{ Reply: TargetVersion | { error: string } }>(
+    '/api/target-version',
+    async (_request, reply) => {
+      try {
+        return await resolveTargetVersion();
+      } catch (error) {
+        return reply.code(502).send({ error: errorMessage(error) });
+      }
+    },
+  );
+
   app.post<{ Reply: SamplesResponse | { error: string } }>(
     '/api/samples/refresh',
     async (_request, reply) => {
       try {
-        return await refreshSamples();
+        return await refreshSamples(true);
       } catch (error) {
         return reply.code(500).send({ error: errorMessage(error) });
       }

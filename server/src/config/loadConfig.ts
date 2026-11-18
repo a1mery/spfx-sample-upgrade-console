@@ -17,6 +17,9 @@ const configSchema = z.object({
     .refine(
       (version) => version === 'latest' || semver.valid(version) !== null,
       'must be "latest" or a valid semver version',
+    )
+    .transform((version) =>
+      version === 'latest' ? version : (semver.valid(version) ?? version),
     ),
   customAgent: z.string().trim().min(1, 'must not be empty').optional(),
   skipList: z

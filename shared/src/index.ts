@@ -5,6 +5,13 @@ export type HealthResponse = {
 export type Toolchain = 'gulp' | 'heft' | 'unknown';
 export type VersionSource = 'package.json' | '.yo-rc.json' | null;
 
+export interface TargetVersion {
+  version: string;
+  source: 'config' | 'npm';
+  resolvedAt: string;
+  stale: boolean;
+}
+
 export interface SampleInfo {
   folder: string;
   title: string | null;
@@ -18,6 +25,7 @@ export interface SampleInfo {
 export interface SampleRow extends SampleInfo {
   skipped: boolean;
   skipReason: string | null;
+  needsUpgrade: boolean | null;
 }
 
 export interface SamplesResponse {
