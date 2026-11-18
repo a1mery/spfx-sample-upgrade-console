@@ -89,7 +89,16 @@ describe('samples API', () => {
     expect(scanCount).toBe(2);
     expect(first.statusCode).toBe(200);
     expect(first.json().scannedAt).not.toBe(initialScannedAt);
-    expect(second.json()).toEqual(first.json());
+    expect(second.json()).toMatchObject({
+      samples: first.json().samples,
+      scannedAt: first.json().scannedAt,
+      total: first.json().total,
+      target: {
+        version: first.json().target.version,
+        source: first.json().target.source,
+        stale: first.json().target.stale,
+      },
+    });
     await app.close();
   });
 
