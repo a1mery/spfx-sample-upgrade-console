@@ -39,16 +39,16 @@ export function createTargetVersionResolver(
       });
     }
 
+    if (inFlight !== null) {
+      return inFlight;
+    }
+
     if (
       !forceRefresh &&
       cached !== null &&
       Date.now() - cachedAt < CACHE_DURATION_MS
     ) {
       return Promise.resolve(cached);
-    }
-
-    if (inFlight !== null) {
-      return inFlight;
     }
 
     const request = (async (): Promise<TargetVersion> => {

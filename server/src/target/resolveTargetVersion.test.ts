@@ -60,17 +60,21 @@ describe('createTargetVersionResolver', () => {
 
   it('shares one in-flight npm lookup between concurrent callers', async () => {
     let finishRequest: ((response: Response) => void) | undefined;
-    const fetchImpl = vi.fn<typeof fetch>(
-      () =>
-        new Promise((resolve) => {
-          finishRequest = resolve;
-        }),
-    );
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(registryResponse('1.22.0'))
+      .mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            finishRequest = resolve;
+          }),
+      );
     const resolve = createTargetVersionResolver('latest', fetchImpl);
 
-    const first = resolve();
-    const second = resolve(true);
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    await resolve();
+    const first = resolve(true);
+    const second = resolve();
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
 
     finishRequest?.(registryResponse('1.23.4'));
     await expect(Promise.all([first, second])).resolves.toMatchObject([
